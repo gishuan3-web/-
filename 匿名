@@ -1,1 +1,569 @@
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Search Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+        
+        /* 検索ボックス */
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .search-input-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .search-input-wrapper input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input-wrapper input:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+        
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+        
+        /* URLの追加フォーム */
+        .add-url-form {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        .add-url-form h3 {
+            margin-bottom: 12px;
+            font-size: 1em;
+        }
+        
+        .form-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+        
+        /* 検索結果 */
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .result-card.highlight {
+            border-left: 4px solid #2a5298;
+        }
+        
+        .result-card h3 {
+            color: #2a5298;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            word-break: break-word;
+        }
+        
+        .result-card .url {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 12px;
+            word-break: break-all;
+            font-family: monospace;
+            opacity: 0.8;
+        }
+        
+        .result-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #2a5298;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        
+        .result-card .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .result-card a {
+            flex: 1;
+            padding: 8px;
+            background: #2a5298;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+        
+        .result-card a:hover {
+            background: #1e3c72;
+        }
+        
+        .result-card .edit-btn {
+            background: #ff9800;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+        
+        .empty-state p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Private Search Hub</h1>
+            <p>登録したURLだけを検索できるプライベート検索ツール</p>
+        </div>
+        
+        <div class="stats">
+            登録URL数: <strong id="urlCount">0</strong> | 検索結果: <strong id="resultCount">0</strong>
+        </div>
+        
+        <div class="search-box">
+            <div class="search-input-wrapper">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="キーワードで検索（タイトル・タグ・URLから検索）"
+                    autocomplete="off"
+                >
+                <button class="btn btn-primary" onclick="search()">検索</button>
+                <button class="btn btn-secondary" onclick="clearSearch()">リセット</button>
+            </div>
+            
+            <div class="add-url-form">
+                <h3>URLを登録</h3>
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="urlTitle" 
+                        placeholder="タイトル（例：Google）"
+                        autocomplete="off"
+                    >
+                    <input 
+                        type="text" 
+                        id="urlLink" 
+                        placeholder="URL（例：https://google.com）"
+                        autocomplete="off"
+                    >
+                </div>
+                <div class="form-group full">
+                    <input 
+                        type="text" 
+                        id="urlTags" 
+                        placeholder="タグ（カンマ区切り例：検索,便利,プライバシー）"
+                        autocomplete="off"
+                    >
+                </div>
+                <button class="btn btn-primary" onclick="addUrl()" style="width: 100%;">追加</button>
+            </div>
+        </div>
+        
+        <div id="results" class="results"></div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p>まずはURLを登録してください👆</p>
+        </div>
+    </div>
+    
+    <!-- 編集モーダル -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>URLを編集</h2>
+            <input type="hidden" id="editId">
+            <input type="text" id="editTitle" placeholder="タイトル">
+            <input type="text" id="editUrl" placeholder="URL">
+            <input type="text" id="editTags" placeholder="タグ（カンマ区切り）">
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="saveEdit()" style="flex: 1;">保存</button>
+                <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">キャンセル</button>
+                <button class="btn btn-danger" onclick="deleteUrl()" style="flex: 1;">削除</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // データ管理
+        class PrivateSearchDB {
+            constructor() {
+                this.storageKey = 'privateSearchUrls';
+                this.load();
+            }
+            
+            load() {
+                const data = localStorage.getItem(this.storageKey);
+                this.urls = data ? JSON.parse(data) : [];
+            }
+            
+            save() {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.urls));
+            }
+            
+            addUrl(title, url, tags) {
+                this.urls.push({
+                    id: Date.now(),
+                    title,
+                    url,
+                    tags: tags.split(',').map(t => t.trim()).filter(t => t),
+                    created: new Date().toISOString()
+                });
+                this.save();
+            }
+            
+            updateUrl(id, title, url, tags) {
+                const index = this.urls.findIndex(u => u.id === id);
+                if (index !== -1) {
+                    this.urls[index] = {
+                        ...this.urls[index],
+                        title,
+                        url,
+                        tags: tags.split(',').map(t => t.trim()).filter(t => t)
+                    };
+                    this.save();
+                }
+            }
+            
+            deleteUrl(id) {
+                this.urls = this.urls.filter(u => u.id !== id);
+                this.save();
+            }
+            
+            search(query) {
+                const q = query.toLowerCase();
+                return this.urls.filter(u => 
+                    u.title.toLowerCase().includes(q) ||
+                    u.url.toLowerCase().includes(q) ||
+                    u.tags.some(tag => tag.toLowerCase().includes(q))
+                );
+            }
+            
+            getAll() {
+                return this.urls;
+            }
+        }
+        
+        const db = new PrivateSearchDB();
+        let currentEditId = null;
+        
+        function addUrl() {
+            const title = document.getElementById('urlTitle').value.trim();
+            const url = document.getElementById('urlLink').value.trim();
+            const tags = document.getElementById('urlTags').value.trim();
+            
+            if (!title || !url) {
+                alert('タイトルとURLは必須です');
+                return;
+            }
+            
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert('URLはhttp://またはhttps://で始まる必要があります');
+                return;
+            }
+            
+            db.addUrl(title, url, tags);
+            
+            document.getElementById('urlTitle').value = '';
+            document.getElementById('urlLink').value = '';
+            document.getElementById('urlTags').value = '';
+            
+            render();
+        }
+        
+        function search() {
+            const query = document.getElementById('searchInput').value.trim();
+            render(query);
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            render();
+        }
+        
+        function render(searchQuery = '') {
+            const resultsDiv = document.getElementById('results');
+            const emptyState = document.getElementById('emptyState');
+            
+            const results = searchQuery ? db.search(searchQuery) : db.getAll();
+            
+            document.getElementById('urlCount').textContent = db.getAll().length;
+            document.getElementById('resultCount').textContent = results.length;
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '';
+                emptyState.style.display = searchQuery ? 'block' : 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            resultsDiv.innerHTML = results.map(item => `
+                <div class="result-card">
+                    <h3>${escapeHtml(item.title)}</h3>
+                    <div class="url">${escapeHtml(item.url)}</div>
+                    ${item.tags.length > 0 ? `
+                        <div class="tags">
+                            ${item.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="actions">
+                        <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">開く</a>
+                        <button class="edit-btn" onclick="openEditModal(${item.id})">編集</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openEditModal(id) {
+            const item = db.urls.find(u => u.id === id);
+            if (!item) return;
+            
+            document.getElementById('editId').value = id;
+            document.getElementById('editTitle').value = item.title;
+            document.getElementById('editUrl').value = item.url;
+            document.getElementById('editTags').value = item.tags.join(', ');
+            document.getElementById('editModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentEditId = null;
+        }
+        
+        function saveEdit() {
+            const id = parseInt(document.getElementById('editId').value);
+            const title = document.getElementById('editTitle').value.trim();
+            const url = document.getElementById('editUrl').value.trim();
+            const tags = document.getElementById('editTags').value.trim();
+            
+            if (!title || !url) {
+                alert('タイトルとURLは必須です');
+                return;
+            }
+            
+            db.updateUrl(id, title, url, tags);
+            closeModal();
+            render();
+        }
+        
+        function deleteUrl() {
+            if (confirm('このURLを削除してもよろしいですか？')) {
+                const id = parseInt(document.getElementById('editId').value);
+                db.deleteUrl(id);
+                closeModal();
+                render();
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // イベントリスナー
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') search();
+        });
+        
+        document.getElementById('urlTitle').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('urlLink').focus();
+        });
+        
+        document.getElementById('urlLink').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addUrl();
+        });
+        
+        // 初期化
+        render();
+    </script>
+</body>
+</html>
